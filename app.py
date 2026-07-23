@@ -40,7 +40,7 @@ app.config["SECRET_KEY"] = load_secret_key()
 def index():
     if "user" in session:
         return redirect(url_for("dashboard"))
-    return redirect(url_for("login"))
+    return redirect(url_for "login")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -50,12 +50,12 @@ def login():
         password = request.form.get("password", "")
 
         password_hash = USERS.get(username)
-        if pasword_hash and check_password_hash(password_hash, password):
+        if password_hash and check_password_hash(password_hash, password):
             session["user"] = username
             return redirect(url_for("dashboard"))
 
         flash("Invalid username or password.")
-        return redirect(url_for("login"))
+        return redirect(url_for "login")
 
     return render_template("login.html")
 
@@ -70,7 +70,7 @@ def dashboard():
 @app.route("/logout")
 def logout():
     session.pop("user", None)
-    return redirect(url_for("login"))
+    return redirect(url_for "login")
 
 
 if __name__ == "__main__":
