@@ -57,9 +57,10 @@
                 {% for message in messages %}
                     <div class="error">{{ message }}</div>
                 {% endfor %}
-            {% endif %}
+            %{ ifendif %}
         {% endwith %}
         <form method="POST" action="{{ url_for('login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Log In</button>
