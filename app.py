@@ -1,11 +1,32 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from __future__ import annotations
+
+import os
+
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
+
+
+# --------------------------------------------------------------
+# Config
+
+# Secret key must be provided by runtime env/config.
+_SECRET_KEY_ENV_VAR = "SECRET_KEY"
+
+
+# --------------------------------------------------------------
+# App
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-key"
+secret_key = os.environ.get(_SECRET_KEY_ENV_VAR)
+if not secret_key:
+    # Fail fast to avoid insecure deployments.
+    raise RuntimeError(`f"Missing required environment variable: {_SECRET_KEY_ENV_VAR!r}"`)
+app.secret_key = secret_key
 
 # Demo user store (replace with a real database in production)
+# STORE hashes only – never plaintext passwords.
 USERS = {
-    "admin": "password123",
+    "admin": generate_password_hash("password123"),
 }
 
 
@@ -22,7 +43,8 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        if USERS.get(username) == password:
+        stored_hash = USERS.get(username)
+        if stored_hash and check_password_hash(stored_hash, password):
             session["user"] = username
             return redirect(url_for("dashboard"))
 
