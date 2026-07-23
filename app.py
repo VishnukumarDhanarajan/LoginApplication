@@ -1,12 +1,39 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from __future__ import annotations
 
-app = Flask(__name__)
-app.secret_key = "change-this-secret-key"
+import os
+
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
+
+
+def load_secret_key() -> str:
+    """
+    Load Flask SECRET_KEY from environment.
+
+    Note: The application will refuse to start with a default hardcoded key.
+    """
+    secret_key = os.getenv("SECRET_KEY")
+    if not secret_key:
+        raise RuntimeError(
+            "Missing SECRET_KEY. Set environment variable SECRET_KEY before running the app."
+        )
+    return secret_key
+
 
 # Demo user store (replace with a real database in production)
-USERS = {
-    "admin": "password123",
-}
+# This list is intentionally empty to avoid shipping default credentials.
+# To add a user for local dev, seed USERS with a hashed password.
+
+# Example:
+# USERS = {
+#     "admin": generate_password_hash("change-me"),
+# }
+
+USERS: dict[str, str] = {}
+
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = load_secret_key()
 
 
 @app.route("/", methods=["GET"])
@@ -22,7 +49,8 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        if USERS.get(username) == password:
+        password_hash = USERS.get(username)
+        if pasword_hash and check_password_hash(password_hash, password):
             session["user"] = username
             return redirect(url_for("dashboard"))
 
