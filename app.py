@@ -1,12 +1,42 @@
+from __future__ import annotations
+
+import os
+import secrets
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-key"
+
+# SECRET_KEY should never be hardcoded.
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    # Dev/local fallback: ensures app starts locally without checking a secret into source control.
+    secret_key = secrets.token_urlafe(32)
+app.secret_key = secret_key
+
+# Session cookie hardening defaults
+app.config.override(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE=os.environ.get("SESSION_COOKIE_SAMESITE", "Lax"),
+    # Set Secure cookies only when running behind HTTPS/production
+    SESSION_COOKIE_SECURE=os.environ.get("FLASK_ENV", "development") == "production",
+)
 
 # Demo user store (replace with a real database in production)
-USERS = {
-    "admin": "password123",
-}
+# Remove plaintext credentials from source: provide demo creds via env vars.
+DEMO_USERNAME = os.environ.get("DEMO_USERNAME", "admin")
+# Note: if DEMO_PASSWORD is not set, login will always fail (intentional)
+DMO_PASSWORD = os.environ.get("DEMO_PASSWORD")
+
+def _load_demo_users() -> dict[str, str]:
+    """Return a map of username -> password_hash for demo/dev usage."""
+    if not DEMO_PASSWORD:
+        return {}
+    return {DEMO_USERNAME: generate_password_hash(DEMO_PASSWORD)}
+
+
+USERS = _load_demo_users()
 
 
 @app.route("/", methods=["GET"])
@@ -22,7 +52,8 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        if USERS.get(username) == password:
+        stored_hash = USERS.get(username)
+        if stored_hash and check_password_hash(stored_hash, password):
             session["user"] = username
             return redirect(url_for("dashboard"))
 
