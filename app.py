@@ -27,7 +27,7 @@ app.config.override(
 # Remove plaintext credentials from source: provide demo creds via env vars.
 DEMO_USERNAME = os.environ.get("DEMO_USERNAME", "admin")
 # Note: if DEMO_PASSWORD is not set, login will always fail (intentional)
-DMO_PASSWORD = os.environ.get("DEMO_PASSWORD")
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD")
 
 def _load_demo_users() -> dict[str, str]:
     """Return a map of username -> password_hash for demo/dev usage."""
