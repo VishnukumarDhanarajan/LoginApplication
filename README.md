@@ -7,35 +7,73 @@ Simple Flask demo app with login/logout using sessions.
 - Python 3.10+
 - Pip installs from `requirements.txt`
 
-## Configuration (KAN-107)
+## Configuration (Sessions + Auth)
 
 This app does not run without a secret key. Set these environment variables:
 
-- `SECRET_KEX` **Required**
+### Required
+
+- `SECRET_KEY`
   - Used by Flask to sign session cookies.
   - If missing, the app will fail on startup (secure-by-default).
 
-- `FLASK_DEBUG` **Optional**
+- `ADMIN_PASSWORD_HASH`
+  ## KAN-109
+  - Required. This is a Werkzeug-compatible (pbkdf2:sha256:...) password hash.
+  - Never store plaintext passwords in the repo.
+
+### Optional
+
+- `ADMIN_USERNAME`
+  - Default: `admin`
+  - User name to associate with `ADMIN_PASSWORD_HASH`.
+
+- `FLASK_DEBUG`
   - Default: `false`
-  - Set to `... `true`, `1`, `yes`, `on` to enable Flask debug mode for local development.
+  - Set to `true`/`1`/ `yes`/`on` to enable Flask debug mode for local development.
 
-## Run locally
+## Local setup
 
-### Mac/Linux
+1) Install dependencies
+
+ ```bash
+ pip install -r requirements.txt
+ ```
+
+2) Generate a secret key
+
+`''bash
+export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+
+```
+
+3) Generate a password hash for the admin user
 
 ```bash
-pip install -r requirements.txt
-export SECRET_KEY="$( python -c 'import secrets; print(secrets.token_urlafer(32))' )"
+python - <<'PY'
+from werkzeug.security import generate_password_hash
+print(generate_password_hash("your-password-here"))
+PY
+```
+
+
+Then set the env var (example):
+
+```bash
+export ADMIN_USERNAME="admin"
+export ADMIN_PASSWORD_HASH="<paste-output-from-the-previous-command>"
 export FLASK_DEBUG=false
 python app.py
 ```
 
 
-### Windows (PowerShell)
+## Windows (PowerShell)
 
-```powershell
-pip installl -r requirements.txt
-$env:SECRET_KEY = (python -c "import secrets; print(secrets.token_urlafer(32))")
-$env:FLASK_DEBUG = "false"
+`''powershell
+pip install -r requirements.txt
+$enf:SECRET_KEY = (python -c "import secrets; print(secrets.token_urlsafe(32))")
+$$env:ADMIN_PASSWORD_HASH = "paste-hash-here"
+$env:ADMIN_USERNAME  = "admin"
+$env:FLASK_DEBUG      = "false"
 python app.py
-```
+''`
