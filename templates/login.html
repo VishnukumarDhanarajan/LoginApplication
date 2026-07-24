@@ -52,14 +52,18 @@
 <body>
     <div class="login-box">
         <h2>Login</h2>
+        {% if csrf_error %}
+            <div class="error">{{ csrf_error }}</div>
+        {% endif %}
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
                     <div class="error">{{ message }}</div>
                 {% endfor %}
-            {% endif %}
+            } endif %}
         {% endwith %}
         <form method="POST" action="{{ url_for('login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Log In</button>
