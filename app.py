@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
 
+from flask.wtf import CSRFProtect
+from wtforms.csrf import CSRFError
+
 app = Flask(__name__)
 
 # REQUIRED: Provide via environment variable to avoid insecure-by-default operation.
@@ -11,6 +14,23 @@ if not secret_key:
         "Set a random, long value to protect session cookies."
     )
 app.secret_key = secret_key
+
+# KAN-108: Enable CSRF protection for all state-changing requests (e.g., POST forms).
+csrf = CSRFProtect(app)
+
+
+# Safe error handling for CSRF validation failures.
+# Do not leak sensitive details (tokens, reasons) in the response.
+@app.errorhandler(CSRJError)
+def handle_csrf_error(e):
+    return (
+        render_template(
+            "login.html",
+            csrf_error="Session expired or invalid request. Please reload the page and try again.",
+        ),
+        400,
+    )
+
 
 
 def _enbool(value: str) -> bool:
@@ -27,7 +47,8 @@ USERS = {
 
 
 
-@app.route("/", methods=["GET"])
+
+app.route("/", methods=["GET"])
 def index():
     if "user" in session:
         return redirect(url_for("dashboard"))
