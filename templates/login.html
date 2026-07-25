@@ -47,6 +47,42 @@
             text-align: center;
             margin-bottom: 1rem;
         }
+        .input-wrapper {
+            position: relative;
+            display: block;
+            margin: 0.4rem 0;
+        }
+        .input-wrapper input {
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .field-icon {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+            pointer-events: none;
+            display: none;
+        }
+        input:focus {
+            border-color: #1877f2;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.2);
+        }
+        input.invalid { border-color: #d32f2f; padding-right: 2rem; }
+        input.valid   { border-color: #2e7d32; padding-right: 2rem; }
+        .error-hint {
+            display: block;
+            font-size: 0.75rem;
+            color: #d32f2f;
+            min-height: 1em;
+            margin-top: 0.15rem;
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            input { transition: border-color 0.12s ease; }
+        }
     </style>
 </head>
 <body>
@@ -59,11 +95,52 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form method="POST" action="{{ url_for('login') }}">
-            <input type="text" name="username" placeholder="Username" required>
+        <form method="POST" action="{{ url_for('login') }}" novalidate>
+            <div class="input-wrapper">
+                <input type="email" id="email" name="username" placeholder="Email" required aria-describedby="email-error" aria-invalid="false">
+                <span id="email-icon" class="field-icon" aria-hidden="true"></span>
+            </div>
+            <span id="email-error" class="error-hint" role="status"></span>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Log In</button>
         </form>
     </div>
+    <script>
+        var emailInput = document.getElementById('email');
+        var emailIcon  = document.getElementById('email-icon');
+        var emailError = document.getElementById('email-error');
+
+        function validateEmail() {
+            var value = emailInput.value;
+            if (value === '') {
+                emailInput.classList.remove('invalid', 'valid');
+                emailInput.setAttribute('aria-invalid', 'false');
+                emailIcon.style.display = 'none';
+                emailIcon.textContent = '';
+                emailError.textContent = '';
+            } else if (!emailInput.validity.valid) {
+                emailInput.classList.remove('valid');
+                emailInput.classList.add('invalid');
+                emailInput.setAttribute('aria-invalid', 'true');
+                emailIcon.textContent = '⚠︎';
+                emailIcon.style.color = '#d32f2f';
+                emailIcon.style.display = 'block';
+                emailError.textContent = 'Please enter a valid email address.';
+            } else {
+                emailInput.classList.remove('invalid');
+                emailInput.classList.add('valid');
+                emailInput.setAttribute('aria-invalid', 'false');
+                emailIcon.textContent = '✓';
+                emailIcon.style.color = '#2e7d32';
+                emailIcon.style.display = 'block';
+                emailError.textContent = '';
+            }
+        }
+
+        if (emailInput) {
+            emailInput.addEventListener('input', validateEmail);
+            emailInput.addEventListener('blur',  validateEmail);
+        }
+    </script>
 </body>
 </html>

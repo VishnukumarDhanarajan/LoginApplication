@@ -22,7 +22,7 @@ DEBUG = _enbool(os.environ.get("FLASK_DEBUG", "false"))
 
 # Demo user store (replace with a real database in production)
 USERS = {
-    "admin": "password123",
+    "admin@example.com": "password123",
 }
 
 
