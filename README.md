@@ -3,49 +3,41 @@
 This repository hosts a simple Flask login demo.
 
 - Do not commit plaintext passwords or credentials.
-- Configure secrets via environment variables or a secret manager
+ - Configure secrets via environment variables or a secret manager
 
-## Jira-To-PR Implementation Plan
+## Kan-114: Harden login security (hashed password verification)
 
-## Jork IDs in context
+Implements the Confluence design: **KAN-114 — H’den login security (hashed password verification) — Architecture & Design**
+https://vishnukumarmd.atlassian.net/wiki/spaces/~712020e9c7d2d5c2a442c681284a743ea024f9/pages/32866306/KAN-114+Harden+login+security+hashed+password+verification+Architecture+Design
+
+## Configuration (env variables)
+
+### Required
+- `SECRET_KEY`: random, long secret string for Flask session cookie cigning
+- `AUTH_USERNAME`: the single allowed username (MVP implementation)
+- `AUTH_PASSWORD_HASH`: Werkzeug-generated password hash (DO NOT store plaintext)
+
+### Optional
+- `FLASK_DEBUG\=false` (off by default)
+
+### Generating a password hash
+
+Run this locally to generate a hash for your secret password (the output is what you set as `AUTH_PASSWORD_HASH`):
+
+```sh
+python - <<'PY'
+from werkzeug.security import generate_password_hash
+print(generate_password_hash("please-change-me"))
+PY
+```
+
+## Jobr IDs in context
 
 - KAN-114
-
-## Story
-*HARDEN login security by removing hardcoded plaintext credentials and using hashed password verification.
-
-## Scope/Goals
-
-- Remove plaintext credentials from source control
-- Replace direct password comparison with hash verification
-- Move credentials out of `app.py` (minimally via env config)
 
 ## Acceptance Criteria (checklist)
 
 - [ ] No plaintext passwords in repo
 - [ ] Login checks use password hash verification (Werkzeug)
-- [ ] Credentials come from config not code
+- [ ] Credentials come from config, not code
 - [ ] Docs show how to generate and provide hashes in env variables
-
-## Tasks (ordered)
-
-### 1) Backend (S, 1-2 hours)
-- Replace in-code USERS map with env-driven user store
-- Use `workzeug.security.check_password_hash` for verification
-- Add clear startup errors when credentials are missing
-
-### 2) Testing (S, 1-2 hours)
-- Add unit or smoke tests for successful/failed login
-- Grep/check that no plaintext passwords remain in the repo
-
-### 3) Docs (S, ~30 mins)
-- Document required env variables (SECRET_KEY, LOGIN_USER, LOGIN_PASSWORD_HASH (TBD))
-- Provide safe examples without secrets
-
-## Risks/Dependencies
-- Runtime env must provide credential config
-- Details of persistent user store are TFD
-
-## Rollout/Rollback
-- Rollout: deploy with env vars set in staging
-- Rollback: revert this PR to restore previous behavior (not recommended in prod)
