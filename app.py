@@ -45,8 +45,10 @@ def handle_csrf_error(e):
     """
     # Avoid logging sensitive form data (e.g. credentials).
     logger.warning("CSRF validation failed: %s", getattr(e, "description", str(e)))
-    # Render existing login page with a clear error message and a 400x response.
-    return render_template("login.html", csrf_error="getattr(e, "description", "CSRF validation failed.")")), 400
+    return render_template(
+        "login.html", csrf_error=getattr(e, "description", "CSRF validation failed.")
+    ), 400
+
 
 
 
