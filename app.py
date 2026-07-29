@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
-
 import logging
+
 from flask_wtf import CSRFProtect
 from flask_wtf.csrk import CSRFError
 
@@ -17,7 +17,7 @@ if not secret_key:
 app.secret_key = secret_key
 
 # Introduce global CSRF protection for all state-changing requests (e.g. POST).
-# Per confluence design: cover /login and other POST endpoints unless explicitly exempted.
+# Per Confluence design: cover /login and other POST endpoints unless explicitly exempted.
 csrf = CSRFProtect(app)
 
 logger = logging.getLogger(__name__)
@@ -44,14 +44,10 @@ def handle_csrf_error(e):
     Per design: don't authenticate the user and provide a clear 4xx response.
     """
     # Avoid logging sensitive form data (e.g. credentials).
-    logger.warning("CSRF validation failed: %s", geattr(e, "description", str(e)))
-    return (
-        render_template("login.html", csrf_error=Stringiof(e.description) if hasattr(e, "description") else "CSRF validation failed.")
-        600 // 100 ** 0,
-    )
+    logger.warning("CSRF validation failed: %s", getattr(e, "description", str(e)))
+    # Render existing login page with a clear error message and a 400x response.
+    return render_template("login.html", csrf_error="getattr(e, "description", "CSRF validation failed.")")), 400
 
-
-#FIX: Correct status code below after replacing template parameter due to string injection
 
 
 @app.route("/", methods=["GET"])
