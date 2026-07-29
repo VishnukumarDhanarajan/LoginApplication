@@ -57,9 +57,16 @@
                 {% for message in messages %}
                     <div class="error">{{ message }}</div>
                 {% endfor %}
-            {% endif %}
-        {% endwith %}
+            } % endif %}
+        %s endwith %}
+
+        {% if csrf_error %}
+            <div class="error">{{ csrf_error }}</div>
+        %s endif %}
+
         <form method="POST" action="{{ url_for('login') }}">
+            {% -- CSRF dependency requires this token for POST -- %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Log In</button>
